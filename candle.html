@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realistic Melting Candle with Bright Flame</title>
+    <style>
+        /* Ensure html and body take full viewport height and width */
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+
+        /* General body styling */
+        body {
+            background-color: #000; /* Dark background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Light spread effect */
+        .light-spread {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 1));
+            pointer-events: none;
+        }
+
+        /* Candle container */
+        .candle {
+            position: relative;
+            width: 50px; /* Reduced width */
+            height: 150px; /* Reduced length */
+            background: white; /* White candle */
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        /* Candle wax melting effect */
+        .candle::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgb(255, 255, 255), transparent);
+            animation: melt 10s infinite linear;
+        }
+
+        @keyframes melt {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-100%);
+            }
+        }
+
+        /* Candle wick */
+        .wick {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px; /* Reduced width */
+            height: 10px; /* Reduced height */
+            background: #444;
+            border-radius: 2px;
+        }
+
+        /* Flame container */
+        .flame {
+            position: absolute;
+            top: -40px; /* Adjusted position for smaller flame */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px; /* Reduced width */
+            height: 50px; /* Reduced height */
+            background: linear-gradient(to bottom, #ff8c00, #ff4500, #00aaff); /* Brighter gradient */
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: flicker 1.5s infinite alternate ease-in-out;
+            box-shadow: 0 0 30px rgba(255, 140, 0, 0.8), 0 0 50px rgba(255, 69, 0, 0.6), 0 0 80px rgba(0, 170, 255, 0.4);
+            transform-origin: bottom center; /* Tilt from the bottom */
+        }
+
+        /* Flame flicker animation */
+        @keyframes flicker {
+            0% {
+                transform: translateX(-50%) scale(1);
+                opacity: 0.9;
+            }
+            50% {
+                transform: translateX(-50%) scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) scale(0.9);
+                opacity: 0.8;
+            }
+        }
+
+        /* Flame exhaustion effect */
+        .flame.exhausted {
+            animation: none;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="light-spread"></div>
+    <div class="candle">
+        <div class="wick"></div>
+        <div class="flame" id="flame"></div>
+    </div>
+
+    <script>
+        const flame = document.getElementById('flame');
+        let lastCursorMoveTime = 0;
+        let cursorMoveCount = 0;
+        const exhaustionThreshold = 5; // Number of rapid cursor movements to exhaust the flame
+        const exhaustionCooldown = 10000; // 10 seconds cooldown
+
+        // Function to handle cursor movement
+        function handleCursorMove(event) {
+            const currentTime = Date.now();
+
+            // Check if cursor is near the candle
+            const candleRect = flame.getBoundingClientRect();
+            const cursorX = event.clientX;
+            const cursorY = event.clientY;
+
+            if (
+                cursorX >= candleRect.left - 50 && cursorX <= candleRect.right + 50 &&
+                cursorY >= candleRect.top - 50 && cursorY <= candleRect.bottom + 50
+            ) {
+                // Increase flicker intensity
+                flame.style.animationDuration = `${Math.random() * 0.5 + 0.5}s`;
+
+                // Count rapid cursor movements
+                if (currentTime - lastCursorMoveTime < 200) { // 200ms threshold for rapid movement
+                    cursorMoveCount++;
+                } else {
+                    cursorMoveCount = 0;
+                }
+
+                // Exhaust flame if rapid movements exceed threshold
+                if (cursorMoveCount >= exhaustionThreshold) {
+                    exhaustFlame();
+                }
+            }
+
+            lastCursorMoveTime = currentTime;
+        }
+
+        // Function to exhaust the flame
+        function exhaustFlame() {
+            flame.classList.add('exhausted');
+            setTimeout(() => {
+                flame.classList.remove('exhausted');
+                cursorMoveCount = 0; // Reset cursor move count
+            }, exhaustionCooldown);
+        }
+
+        // Add event listener for cursor movement
+        window.addEventListener('mousemove', handleCursorMove);
+    </script>
+</body>
+</html>
