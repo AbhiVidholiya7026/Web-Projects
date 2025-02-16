@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abhishek Sharma - Resume</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f4f4f4, #e0e0e0);
+            color: #333;
+            transition: background 0.5s, color 0.5s;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: #fff;
+        }
+
+        .container {
+            max-width: 90%; /* Adjusted for better responsiveness */
+            margin: 20px auto; /* Reduced margin for smaller screens */
+            padding: 20px; /* Reduced padding for smaller screens */
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            animation: fadeIn 1.5s ease-in-out;
+            transition: background 0.5s, color 0.5s;
+        }
+
+        body.dark-mode .container {
+            background: #34495e;
+            color: #fff;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            transition: color 0.5s;
+        }
+
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode h3 {
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 2.5em; /* Adjusted for smaller screens */
+            margin-bottom: 10px;
+            color: #34495e;
+            text-align: center;
+            animation: slideIn 1s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        h2 {
+            font-size: 1.8em; /* Adjusted for smaller screens */
+            margin-top: 20px; /* Reduced margin for smaller screens */
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 5px;
+            display: inline-block;
+            animation: fadeIn 1s ease-in-out;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        h3 {
+            font-size: 1.3em; /* Adjusted for smaller screens */
+            margin-top: 15px; /* Reduced margin for smaller screens */
+            color: #2980b9;
+            animation: fadeIn 1s ease-in-out;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            transform: perspective(100px) rotateX(10deg);
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 1em; /* Adjusted for smaller screens */
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            background: #ecf0f1;
+            margin: 10px 0;
+            padding: 10px; /* Reduced padding for smaller screens */
+            border-left: 5px solid #3498db;
+            border-radius: 5px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: slideInListItem 0.5s ease-in-out;
+        }
+
+        body.dark-mode ul li {
+            background: #2c3e50;
+            color: #fff;
+        }
+
+        @keyframes slideInListItem {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        ul li:hover {
+            transform: translateX(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 20px; /* Reduced margin for smaller screens */
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            padding: 15px; /* Reduced padding for smaller screens */
+            border-radius: 10px;
+            color: #fff;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .contact-info p {
+            margin: 5px 0;
+            font-size: 0.9em; /* Adjusted for smaller screens */
+            flex: 1 1 100%; /* Stack items vertically on small screens */
+        }
+
+        .contact-info a {
+            color: #fff;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .contact-info a:hover {
+            opacity: 0.8;
+        }
+
+        .section {
+            margin-bottom: 30px; /* Reduced margin for smaller screens */
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .declaration {
+            font-style: italic;
+            text-align: center;
+            margin-top: 20px; /* Reduced margin for smaller screens */
+            font-size: 1em; /* Adjusted for smaller screens */
+            color: #555;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        body.dark-mode .declaration {
+            color: #ccc;
+        }
+
+        .signature {
+            font-weight: bold;
+            text-align: right;
+            margin-top: 10px;
+            font-size: 1.1em; /* Adjusted for smaller screens */
+            color: #34495e;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        body.dark-mode .signature {
+            color: #fff;
+        }
+
+        /* Icons for Contact Info */
+        .contact-info p::before {
+            content: "📞";
+            margin-right: 8px;
+        }
+
+        .contact-info p:nth-child(2)::before {
+            content: "📧";
+        }
+
+        .contact-info p:nth-child(3)::before {
+            content: "🏠";
+        }
+
+        /* Download Button */
+        #downloadPdf {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em; /* Adjusted for smaller screens */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #downloadPdf:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Dark Mode Toggle */
+        #darkModeToggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em; /* Adjusted for smaller screens */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #darkModeToggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em; /* Further reduced for small screens */
+            }
+
+            h2 {
+                font-size: 1.5em; /* Further reduced for small screens */
+            }
+
+            h3 {
+                font-size: 1.2em; /* Further reduced for small screens */
+            }
+
+            .container {
+                padding: 15px; /* Further reduced padding for small screens */
+            }
+
+            .contact-info {
+                flex-direction: column; /* Stack contact info vertically */
+                align-items: flex-start;
+            }
+
+            .contact-info p {
+                flex: 1 1 100%; /* Full width for small screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em; /* Adjusted for very small screens */
+            }
+
+            h2 {
+                font-size: 1.3em; /* Adjusted for very small screens */
+            }
+
+            h3 {
+                font-size: 1.1em; /* Adjusted for very small screens */
+            }
+
+            .container {
+                max-width: 95%; /* Wider container for very small screens */
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+</head>
+<body>
+    <button id="darkModeToggle" aria-label="Toggle Dark Mode">Toggle Dark Mode</button>
+    <button id="downloadPdf" aria-label="Download PDF">Download PDF</button>
+
+    <div class="container">
+        <header>
+            <h1>Abhishek Sharma</h1>
+            <div class="contact-info">
+                <p>Permanent Address: 40A, Kripa Pawan Dham, Shamshabad Rd, Agra, U.P.</p>
+                <p>Phone: +91-9125320091</p>
+                <p>Email: <a href="mailto:abhishekvidholiya7026@gmail.com">abhishekvidholiya7026@gmail.com</a></p>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2>Career Objective</h2>
+            <p>Looking for a career opportunity to contribute to the development of an organization through my personal determination, challenge-accepting attitude, creative and logical skills while fulfilling the personal objective of my life.</p>
+        </section>
+
+        <section class="section">
+            <h2>Academic Qualification</h2>
+            <ul>
+                <li>Pursuing BTech CSE from Amity University Madhya Pradesh (2021-2025) with CGPA 7.2</li>
+                <li>Minor track degree in Data Science.</li>
+                <li>Passed 10<sup>th</sup> from CBSE Board in 2018, with 76.2%</li>
+                <li>Passed 12<sup>th</sup> from CBSE Board in 2021, with 74.4%</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>Projects</h2>
+            <h3>Project 1 - Blood Demand Prediction Using ML</h3>
+            <ul>
+                <li>Built a predictive model for Hospitals and Health Clinics to predict/forecast the further demand of blood to make it available at a time.</li>
+                <li>Techniques used in this model: Logistic Regression and Decision Tree using TPOT.</li>
+                <li>Tech stack used: Python.</li>
+            </ul>
+            <h3>Project 2 - Sentimental Analysis Model</h3>
+            <ul>
+                <li>Made a model which analyses the sentiments of comments on social media platforms like Twitter and Reddit.</li>
+                <li>Modeling techniques used: Linear SVC and Decision Tree.</li>
+                <li>Tech stack used: Python.</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>Computer Intellect</h2>
+            <ul>
+                <li>Language knowledge: C, C++, Python</li>
+                <li>Application software: Visual Studio Code, Jupyter</li>
+                <li>Development: HTML, CSS, JS</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>Hobbies</h2>
+            <ul>
+                <li>Reading</li>
+                <li>Playing Football</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>Personal Details</h2>
+            <p>Father’s Name: Vivek Sharma</p>
+            <p>Date of Birth: January 12, 2002</p>
+        </section>
+
+        <section class="section">
+            <h2>Self-Declaration</h2>
+            <p class="declaration">I hereby declare that all the above information is true to the best of my knowledge and belief.</p>
+            <p class="signature">(Abhishek Sharma)</p>
+        </section>
+    </div>
+
+    <script>
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            darkModeToggle.textContent = body.classList.contains('dark-mode') ? 'Toggle Light Mode' : 'Toggle Dark Mode';
+        });
+
+        // PDF Download
+        document.getElementById('downloadPdf').addEventListener('click', function () {
+            const element = document.querySelector('.container');
+            const options = {
+                margin: 10,
+                filename: 'Abhishek_Sharma_Resume.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(element).set(options).save();
+        });
+
+        // GSAP Animations
+        gsap.from('h1', { duration: 1, x: -100, opacity: 0, ease: 'power2.out' });
+        gsap.from('.contact-info', { duration: 1, y: 50, opacity: 0, delay: 0.5, ease: 'power2.out' });
+        gsap.from('.section', { duration: 1, y: 50, opacity: 0, stagger: 0.3, delay: 1, ease: 'power2.out' });
+    </script>
+</body>
+</html>
