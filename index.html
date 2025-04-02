@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Summarizer</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Text Summarizer</h1>
+        <div class="input-section">
+            <textarea id="inputText" placeholder="Paste your text here (max 2000 words)..." spellcheck="false"></textarea>
+            <div class="word-count" id="wordCount">0 / 2000 words</div>
+            <button class="summarize-btn" onclick="summarizeText()">Summarize</button>
+        </div>
+        <div class="loading" id="loadingSpinner" style="display: none;">
+            <div class="spinner"></div>
+        </div>
+        <div class="summary-section" id="summaryOutput">
+            <button class="toggle-btn" onclick="toggleSummary()">Show Summary</button>
+            <div class="summary-content" id="summaryContent"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
