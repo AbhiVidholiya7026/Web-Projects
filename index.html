@@ -9,17 +9,31 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="title">Text Summarizer</h1>
+        <div class="header">
+            <h1 class="title">Text Summarizer</h1>
+            <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+        </div>
         <div class="input-section">
-            <textarea id="inputText" placeholder="Paste your text here (max 2000 words)..." spellcheck="false"></textarea>
+            <div class="limit-control">
+                <label for="maxWords">Max Words:</label>
+                <input type="number" id="maxWords" min="100" max="5000" value="2000">
+            </div>
+            <textarea id="inputText" placeholder="Paste your text here..." spellcheck="false"></textarea>
+            <div class="progress-bar" id="progressBar"></div>
             <div class="word-count" id="wordCount">0 / 2000 words</div>
-            <button class="summarize-btn" onclick="summarizeText()">Summarize</button>
+            <div class="button-group">
+                <button class="summarize-btn" onclick="summarizeText()">Summarize</button>
+                <button class="clear-btn" onclick="clearText()">Clear</button>
+            </div>
         </div>
         <div class="loading" id="loadingSpinner" style="display: none;">
             <div class="spinner"></div>
         </div>
         <div class="summary-section" id="summaryOutput">
-            <button class="toggle-btn" onclick="toggleSummary()">Show Summary</button>
+            <div class="summary-header">
+                <button class="toggle-btn" onclick="toggleSummary()">Show Summary</button>
+                <button class="copy-btn" onclick="copySummary()" style="display: none;">Copy</button>
+            </div>
             <div class="summary-content" id="summaryContent"></div>
         </div>
     </div>
