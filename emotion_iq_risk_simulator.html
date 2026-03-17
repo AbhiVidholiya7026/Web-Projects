@@ -1,0 +1,2234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EmotionIQ — Behavioral Risk Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #18181f;
+  --surface: #1e1e28;
+  --surface2: #252532;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #f0efe8;
+  --text2: #9998a8;
+  --text3: #5c5b6e;
+  --accent: #7c6af7;
+  --accent2: #5b4fd8;
+  --gold: #e8b84b;
+  --gold2: #c9931a;
+  --red: #f05252;
+  --red2: #c03030;
+  --green: #3ec97b;
+  --green2: #1f8a4c;
+  --amber: #f5a623;
+  --teal: #2dd4bf;
+  --pink: #f472b6;
+  --glow: rgba(124,106,247,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* NOISE TEXTURE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.4;
+}
+
+/* TYPOGRAPHY */
+.font-display { font-family: 'Syne', sans-serif; }
+.font-mono { font-family: 'DM Mono', monospace; }
+
+/* SCREENS */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* =================== INTRO SCREEN =================== */
+#intro {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.intro-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(124,106,247,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(232,184,75,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 30% 30% at 10% 70%, rgba(61,201,123,0.05) 0%, transparent 50%);
+}
+
+.intro-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.intro-content {
+  position: relative;
+  max-width: 680px;
+  width: 100%;
+  text-align: center;
+  animation: fadeUp 0.8s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.intro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border2);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  margin-bottom: 1.5rem;
+  background: rgba(124,106,247,0.08);
+}
+
+.intro-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  animation: pulse-dot 2s ease infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.intro-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+.intro-title span.accent { color: var(--accent); }
+.intro-title span.gold { color: var(--gold); }
+
+.intro-sub {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 auto 2.5rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1rem 1.5rem;
+  text-align: center;
+  min-width: 110px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.stat-item:first-child { border-radius: 10px 0 0 10px; }
+.stat-item:last-child { border-radius: 0 10px 10px 0; }
+.stat-item:hover { border-color: var(--border2); background: var(--surface2); }
+
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+}
+
+.stat-lbl {
+  font-size: 11px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: 'DM Mono', monospace;
+}
+
+.btn-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 1rem 2rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 0 30px rgba(124,106,247,0.35);
+}
+
+.btn-start:hover {
+  background: var(--accent2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 40px rgba(124,106,247,0.5);
+}
+
+.btn-start:active { transform: translateY(1px); }
+
+.btn-start svg { width: 18px; height: 18px; transition: transform 0.2s; }
+.btn-start:hover svg { transform: translateX(3px); }
+
+/* DIMENSION PREVIEW */
+.dim-preview {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.dim-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  letter-spacing: 0.05em;
+}
+
+/* =================== SCENARIO SCREEN =================== */
+#scenario {
+  flex-direction: column;
+  padding: 0;
+}
+
+.scenario-shell {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .scenario-shell { grid-template-columns: 1fr; }
+  .scenario-sidebar { display: none; }
+}
+
+.scenario-main {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 2.5rem;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.scenario-sidebar {
+  background: var(--bg2);
+  padding: 2rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* TOP BAR */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.logo-sm {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+.progress-track {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prog-seg {
+  height: 3px;
+  width: 32px;
+  border-radius: 2px;
+  background: var(--surface2);
+  transition: background 0.3s;
+}
+
+.prog-seg.done { background: var(--accent); }
+.prog-seg.current { background: var(--gold); animation: prog-pulse 1.5s ease infinite; }
+
+@keyframes prog-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* TIMER */
+.timer-wrap {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.timer-track {
+  height: 2px;
+  background: var(--surface2);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.timer-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width 0.1s linear, background 0.5s;
+}
+
+.timer-fill.warn { background: var(--amber); }
+.timer-fill.urgent { background: var(--red); animation: blink 0.4s ease infinite; }
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.timer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.timer-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  transition: color 0.3s;
+}
+
+.timer-num.urgent { color: var(--red); }
+.dim-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+  border: 1px solid;
+}
+
+/* SCENARIO CONTENT */
+.scenario-index {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.scenario-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.scenario-body {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.75;
+  max-width: 560px;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border-left: 2px solid var(--border2);
+  border-radius: 0 8px 8px 0;
+}
+
+/* MARKET CHART */
+.chart-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.chart-ticker {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.chart-delta {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.chart-delta.up { color: var(--green); }
+.chart-delta.down { color: var(--red); }
+
+.chart-canvas-wrap { position: relative; height: 80px; }
+.chart-canvas-wrap canvas { width: 100% !important; }
+
+/* CHOICES */
+.choices-label {
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 10px;
+}
+
+.choices-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.choice-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.choice-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.choice-btn:hover { border-color: var(--border2); transform: translateX(3px); }
+.choice-btn:hover::before { opacity: 0.04; }
+
+.choice-btn.selected {
+  border-color: var(--accent);
+  background: rgba(124,106,247,0.08);
+}
+
+.choice-btn.selected .choice-key { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.choice-btn.correct { border-color: var(--green); background: rgba(61,201,123,0.06); }
+.choice-btn.wrong { border-color: var(--red); background: rgba(240,82,82,0.06); }
+.choice-btn.disabled { pointer-events: none; }
+
+.choice-key {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text3);
+  flex-shrink: 0;
+  transition: all 0.15s;
+  background: var(--bg);
+  position: relative;
+  z-index: 1;
+}
+
+.choice-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+  padding-top: 4px;
+}
+
+.confirm-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: none;
+  box-shadow: 0 0 20px rgba(124,106,247,0.2);
+}
+
+.confirm-btn.visible { display: block; animation: fadeUp 0.2s ease; }
+.confirm-btn:hover { background: var(--accent2); box-shadow: 0 4px 30px rgba(124,106,247,0.4); }
+
+/* SIDEBAR COMPONENTS */
+.sidebar-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.sidebar-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.score-dim-name { font-size: 12px; color: var(--text2); }
+.score-dim-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.mini-bar-wrap { width: 80px; height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.mini-bar { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+/* SPEED METER */
+.speed-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.speed-canvas-wrap { position: relative; width: 80px; height: 80px; }
+.speed-canvas-wrap canvas { position: absolute; inset: 0; }
+.speed-val-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.speed-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.speed-unit { font-size: 9px; color: var(--text3); }
+
+/* INSIGHT FEEDBACK */
+.insight-panel {
+  border-left: 2px solid var(--accent);
+  background: rgba(124,106,247,0.06);
+  padding: 1rem;
+  border-radius: 0 8px 8px 0;
+  animation: slideIn 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.insight-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.insight-text { font-size: 13px; color: var(--text2); line-height: 1.65; }
+.insight-text strong { color: var(--text); font-weight: 500; }
+
+/* NEXT BUTTON */
+.next-btn {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.next-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,106,247,0.06); }
+
+/* COGNITIVE LOAD INDICATOR */
+.cog-load {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+}
+
+.cog-bar {
+  flex: 1;
+  height: 2px;
+  background: var(--surface2);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.cog-fill {
+  height: 100%;
+  border-radius: 1px;
+  background: linear-gradient(90deg, var(--teal), var(--accent));
+  transition: width 0.5s ease;
+}
+
+/* =================== RESULTS SCREEN =================== */
+#results {
+  flex-direction: column;
+  padding: 2.5rem;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+}
+
+.results-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(124,106,247,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.results-inner {
+  max-width: 900px;
+  width: 100%;
+  position: relative;
+}
+
+.results-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: fadeUp 0.6s ease both;
+}
+
+.results-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.results-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.results-subtitle { font-size: 14px; color: var(--text2); }
+
+/* PROFILE CARD */
+.profile-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  animation: fadeUp 0.6s 0.1s ease both;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--gold), var(--teal));
+}
+
+.profile-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.profile-info { flex: 1; }
+
+.profile-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.profile-score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.profile-score {
+  font-family: 'DM Mono', monospace;
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.profile-score-label { font-size: 12px; color: var(--text3); }
+.profile-desc { font-size: 13px; color: var(--text2); line-height: 1.65; max-width: 540px; }
+
+/* RESULTS GRID */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+@media (max-width: 700px) {
+  .results-grid { grid-template-columns: 1fr; }
+}
+
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.result-card-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+/* RADAR CHART */
+.radar-wrap {
+  position: relative;
+  height: 240px;
+}
+
+.radar-wrap canvas { width: 100% !important; }
+
+/* DIMENSION BREAKDOWN */
+.dim-breakdown { display: flex; flex-direction: column; gap: 12px; }
+
+.dim-row { display: flex; align-items: center; gap: 12px; }
+.dim-label {
+  font-size: 12px;
+  color: var(--text2);
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.dim-bar-outer {
+  flex: 1;
+  height: 5px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dim-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+}
+
+.dim-score {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* BEHAVIORAL SIGNALS */
+.signal-list { display: flex; flex-direction: column; gap: 8px; }
+
+.signal-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  background: var(--bg3);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.signal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+/* AI ANALYSIS */
+.ai-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s 0.3s ease both;
+  position: relative;
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.ai-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(124,106,247,0.15);
+  border: 1px solid rgba(124,106,247,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ai-title-sub {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+}
+
+.ai-output {
+  font-size: 13.5px;
+  color: var(--text2);
+  line-height: 1.75;
+}
+
+.ai-output strong { color: var(--text); font-weight: 500; }
+
+.ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.ai-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* TYPING EFFECT */
+.typing-cursor::after {
+  content: '|';
+  animation: blink-cursor 0.8s steps(1) infinite;
+  color: var(--accent);
+}
+
+@keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ACTION BUTTONS */
+.action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s 0.4s ease both;
+}
+
+.btn-outline {
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,106,247,0.06); }
+.btn-outline.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-outline.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+/* COMPARISON BENCHMARKS */
+.bench-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.bench-row:last-child { border-bottom: none; }
+.bench-name { flex: 1; color: var(--text2); }
+.bench-bar-outer { width: 100px; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.bench-bar-fill { height: 100%; border-radius: 2px; }
+.bench-val { font-family: 'DM Mono', monospace; font-size: 12px; min-width: 28px; text-align: right; color: var(--text2); }
+.bench-diff { font-family: 'DM Mono', monospace; font-size: 11px; min-width: 36px; text-align: right; }
+
+/* SCROLL TO TOP */
+.back-home {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 100;
+}
+
+.back-home:hover { background: var(--accent); border-color: var(--accent); }
+.back-home svg { width: 16px; height: 16px; color: var(--text2); }
+.back-home:hover svg { color: #fff; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  font-size: 13px;
+  color: var(--text);
+  z-index: 500;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  white-space: nowrap;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .scenario-main { padding: 1.25rem; }
+  .results { padding: 1.25rem; }
+}
+
+/* COMPARISON CHART FULL WIDTH */
+.full-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s 0.35s ease both;
+}
+
+.comparison-chart-wrap { position: relative; height: 200px; margin-top: 1rem; }
+.comparison-chart-wrap canvas { width: 100% !important; }
+</style>
+</head>
+<body>
+
+<!-- =================== INTRO =================== -->
+<div id="intro" class="screen active">
+  <div class="intro-bg"></div>
+  <div class="intro-grid"></div>
+  <div class="intro-content">
+    <div class="intro-badge">BEHAVIORAL RISK PROFILING</div>
+    <h1 class="intro-title font-display">
+      <span class="accent">Emotion</span><span class="gold">IQ</span><br>Investor
+    </h1>
+    <p class="intro-sub">
+      Traditional risk questionnaires capture what you <em>say</em> you'll do. This simulation reveals what you <em>actually</em> do — under real time pressure, market stress, and emotional conflict.
+    </p>
+
+    <div class="stat-row">
+      <div class="stat-item">
+        <span class="stat-num">8</span>
+        <span class="stat-lbl">Scenarios</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">5</span>
+        <span class="stat-lbl">Dimensions</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">~6m</span>
+        <span class="stat-lbl">Duration</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">AI</span>
+        <span class="stat-lbl">Analysis</span>
+      </div>
+    </div>
+
+    <button class="btn-start" onclick="startSim()">
+      Begin Assessment
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
+
+    <div class="dim-preview">
+      <span class="dim-tag">LOSS TOLERANCE</span>
+      <span class="dim-tag">TIME PRESSURE</span>
+      <span class="dim-tag">VOLATILITY COMFORT</span>
+      <span class="dim-tag">RECOVERY BEHAVIOR</span>
+      <span class="dim-tag">CONSISTENCY</span>
+      <span class="dim-tag">DISPOSITION EFFECT</span>
+      <span class="dim-tag">HERD RESISTANCE</span>
+      <span class="dim-tag">REGRET AVERSION</span>
+    </div>
+  </div>
+</div>
+
+<!-- =================== SCENARIO =================== -->
+<div id="scenario" class="screen">
+  <div class="scenario-shell">
+    <!-- MAIN LEFT -->
+    <div class="scenario-main">
+      <div class="top-bar">
+        <div class="logo-sm font-display">EMOTIONIQ</div>
+        <div class="progress-track" id="prog-track"></div>
+        <div class="font-mono" id="sc-counter" style="font-size:12px;color:var(--text3)">0/8</div>
+      </div>
+
+      <div class="timer-wrap">
+        <div class="timer-track">
+          <div class="timer-fill" id="timer-fill" style="width:100%"></div>
+        </div>
+        <div class="timer-row">
+          <div class="font-mono" id="timer-num" style="font-size:11px;color:var(--text3)">DECISION WINDOW</div>
+          <div class="timer-num" id="timer-val">—</div>
+        </div>
+      </div>
+
+      <div class="scenario-index font-mono" id="sc-index">SCENARIO 1 · LOSS TOLERANCE</div>
+      <div class="scenario-title font-display" id="sc-title">Loading...</div>
+      <div class="scenario-body" id="sc-body">...</div>
+
+      <div class="chart-wrap" id="chart-wrap">
+        <div class="chart-header">
+          <span class="chart-ticker font-mono" id="chart-ticker">NIFTY 50 · LIVE SIMULATION</span>
+          <span class="chart-delta" id="chart-delta">—</span>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="mkt-chart" height="80"></canvas>
+        </div>
+      </div>
+
+      <div class="choices-label font-mono">YOUR RESPONSE</div>
+      <div class="choices-grid" id="choices-grid"></div>
+
+      <button class="confirm-btn font-display" id="confirm-btn" onclick="confirmChoice()">
+        Lock In Decision
+      </button>
+
+      <div id="insight-wrap" style="display:none">
+        <div class="insight-panel" id="insight-panel">
+          <div class="insight-label font-mono">Behavioral Signal Detected</div>
+          <div class="insight-text" id="insight-text"></div>
+        </div>
+        <button class="next-btn" id="next-btn" onclick="nextScenario()">
+          Continue
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR RIGHT -->
+    <div class="scenario-sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-title font-mono">Live Score</div>
+        <div id="live-scores"></div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title font-mono">Decision Speed</div>
+        <div class="speed-ring-wrap">
+          <div class="speed-canvas-wrap">
+            <canvas id="speed-ring" width="80" height="80"></canvas>
+            <div class="speed-val-inner">
+              <span class="speed-num font-mono" id="speed-num">—</span>
+              <span class="speed-unit font-mono">SEC</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);text-align:center;font-family:'DM Mono',monospace;" id="speed-label">Awaiting decision</div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title font-mono">Cognitive Load</div>
+        <div class="cog-load">
+          <span style="font-size:10px;min-width:28px">Low</span>
+          <div class="cog-bar"><div class="cog-fill" id="cog-fill" style="width:20%"></div></div>
+          <span style="font-size:10px;min-width:28px;text-align:right">High</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;font-family:'DM Mono',monospace;" id="cog-label">System 2 active</div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title font-mono">Behavioral Biases</div>
+        <div id="bias-detected" style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;">Collecting data...</div>
+      </div>
+
+      <div class="sidebar-card" style="background: rgba(124,106,247,0.04); border-color: rgba(124,106,247,0.2);">
+        <div class="sidebar-title font-mono" style="color:var(--accent)">Research Context</div>
+        <div id="research-context" style="font-size:12px;color:var(--text3);line-height:1.6;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== RESULTS =================== -->
+<div id="results" class="screen">
+  <div class="results-bg"></div>
+  <div class="results-inner">
+    <div class="results-header">
+      <div class="results-eyebrow font-mono">Assessment Complete</div>
+      <h2 class="results-title font-display" id="res-title">Your Risk Profile</h2>
+      <p class="results-subtitle" id="res-subtitle">Based on 8 behavioral observations under time-pressure</p>
+    </div>
+
+    <div class="profile-card" id="profile-card"></div>
+
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-card-title font-mono">Behavioral Radar</div>
+        <div class="radar-wrap"><canvas id="radar-chart" height="240"></canvas></div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-title font-mono">Dimension Scores</div>
+        <div class="dim-breakdown" id="dim-breakdown"></div>
+      </div>
+    </div>
+
+    <div class="full-card">
+      <div class="result-card-title font-mono">Your Scores vs Benchmarks</div>
+      <div class="comparison-chart-wrap">
+        <canvas id="bench-chart" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="ai-card" id="ai-card">
+      <div class="ai-header">
+        <div class="ai-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="ai-title font-display">AI Behavioral Analysis</div>
+          <div class="ai-title-sub font-mono">Powered by Claude · Anthropic</div>
+        </div>
+      </div>
+      <div id="ai-output" class="ai-output">
+        <div class="ai-loading">
+          <div class="ai-spinner"></div>
+          Analyzing your behavioral patterns...
+        </div>
+      </div>
+    </div>
+
+    <div class="results-grid" style="margin-bottom:1.5rem">
+      <div class="result-card">
+        <div class="result-card-title font-mono">Behavioral Signals</div>
+        <div class="signal-list" id="signal-list"></div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-title font-mono">vs Indian Retail Avg</div>
+        <div id="bench-list"></div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-outline primary" onclick="getAICoaching()">Get Personalized Coaching ↗</button>
+      <button class="btn-outline" onclick="restartSim()">Retake Assessment</button>
+      <button class="btn-outline" onclick="getBiasReport()">Full Bias Report ↗</button>
+      <button class="btn-outline" onclick="getSIPStrategy()">SIP Strategy ↗</button>
+    </div>
+  </div>
+
+  <div class="back-home" onclick="restartSim()" title="Start over">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    </svg>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =================== DATA ===================
+const SCENARIOS = [
+  {
+    id: 0,
+    dimKey: "loss",
+    dimLabel: "LOSS TOLERANCE",
+    dimColor: "#7c6af7",
+    index: "SCENARIO 1 · LOSS TOLERANCE",
+    title: "Your portfolio crashes 22% in 3 weeks",
+    body: "Your ₹5,00,000 equity portfolio is now worth ₹3,90,000. Markets are in freefall — circuit breakers triggered twice this week. Your WhatsApp groups are full of panic. SIPs are auto-debiting tomorrow. What do you do?",
+    time: 28,
+    chart: "crash",
+    chartDelta: "-22.4%",
+    deltaDir: "down",
+    ticker: "NIFTY 50 · CRASH MODE",
+    choices: [
+      { k: "A", text: "Sell everything — move to FD/gold immediately", score: 8, type: "panic" },
+      { k: "B", text: "Cancel SIP and hold remaining units nervously", score: 30, type: "hesitate" },
+      { k: "C", text: "Do nothing — stay the course with SIP running", score: 72, type: "hold" },
+      { k: "D", text: "Step up SIP amount — averaging down aggressively", score: 92, type: "bold" },
+    ],
+    insights: {
+      panic: "<strong>Loss Aversion Trigger:</strong> You sold at a 22% loss — a classic System 1 override. Kahneman & Tversky showed losses feel ~2.5× more intense than equivalent gains. Your actual loss tolerance is far below your stated preference.",
+      hesitate: "<strong>Myopic Loss Aversion:</strong> SIP cancellation during drawdowns is the most common Indian retail investor error. Benartzi & Thaler (1995) showed that evaluation frequency alone drives this — you're reacting to noise.",
+      hold: "<strong>Emotional Regulation:</strong> Staying invested through a 22% crash is harder than it sounds. Only ~38% of Indian SIP investors continued during March 2020. This signals above-average loss tolerance.",
+      bold: "<strong>Counter-Cyclical Behavior:</strong> Increasing SIP during crashes is the behaviorally optimal strategy but only ~9% of retail investors do this. This is a strong signal of genuine risk resilience.",
+    },
+    research: "SEBI data (2020): 62% of Indian retail investors made risk-reducing changes during the COVID crash, despite 87% stating 'moderate to high' risk tolerance on questionnaires."
+  },
+  {
+    id: 1,
+    dimKey: "time",
+    dimLabel: "TIME PRESSURE",
+    dimColor: "#f5a623",
+    index: "SCENARIO 2 · TIME PRESSURE RESPONSE",
+    title: "Breaking: fraud allegations at your largest holding",
+    body: "A company representing 20% of your portfolio just halted trading citing accounting irregularities. When markets open in 8 minutes you must decide. Media is calling it 'India's Enron.' The stock could open -40% or -5% — no one knows. You have 12 seconds.",
+    time: 12,
+    chart: "spike",
+    chartDelta: "HALTED",
+    deltaDir: "down",
+    ticker: "NSE · TRADING HALT",
+    choices: [
+      { k: "A", text: "Market sell the moment trading opens — exit everything", score: 18, type: "panic" },
+      { k: "B", text: "Sell half immediately, hold rest pending investigation", score: 52, type: "partial" },
+      { k: "C", text: "Wait for first 15 minutes of data before deciding", score: 78, type: "deliberate" },
+      { k: "D", text: "Hold — accounting frauds are often exaggerated initially", score: 58, type: "contrarian" },
+    ],
+    insights: {
+      panic: "<strong>System 1 Dominance:</strong> Under 12-second pressure, full exit is the most common response. Your decision speed indicates high emotional reactivity — fast choices under stress are more predictive of your 'true' behavior than questionnaires.",
+      partial: "<strong>Compromise Under Pressure:</strong> Partial selling reduces regret exposure on both sides. Your time-pressure tolerance is moderate — you preserved some rationality but fear influenced the decision.",
+      deliberate: "<strong>System 2 Engagement:</strong> Waiting for data before acting under extreme time pressure is rare and valuable. Research shows investors who wait for first-day post-crisis data earn significantly better returns.",
+      contrarian: "<strong>Analytical Overriding Fear:</strong> Your ability to dismiss media panic and reason from first principles under time pressure is a strong behavioral trait. However, single-stock fraud risk warrants some position management.",
+    },
+    research: "Odean (1998): Investors who made trades within 24 hours of negative news earned 2.3% less on average than those who waited. Fast decisions consistently underperform deliberate ones."
+  },
+  {
+    id: 2,
+    dimKey: "vol",
+    dimLabel: "VOLATILITY COMFORT",
+    dimColor: "#534AB7",
+    index: "SCENARIO 3 · VOLATILITY COMFORT",
+    title: "Daily swings of ₹45,000 — for 3 straight weeks",
+    body: "Your portfolio swings between ₹4.5L and ₹5.2L every single day for 21 days — up 8% one day, down 6% the next. You're net positive (+4%) overall. But the emotional whipsaw is relentless. How do you actually behave?",
+    time: 20,
+    chart: "volatile",
+    chartDelta: "+4.1% NET",
+    deltaDir: "up",
+    ticker: "PORTFOLIO · HIGH VOLATILITY",
+    choices: [
+      { k: "A", text: "I open my broker app multiple times daily, feeling stressed each time", score: 12, type: "anxious" },
+      { k: "B", text: "I check once per day after market close, feeling mild discomfort", score: 42, type: "nervous" },
+      { k: "C", text: "I check weekly — daily noise is irrelevant to my 10-year goal", score: 82, type: "calm" },
+      { k: "D", text: "I set alerts only — volatility is how wealth compounds. I barely notice.", score: 96, type: "zen" },
+    ],
+    insights: {
+      anxious: "<strong>Myopic Loss Aversion Peak:</strong> Multiple daily checks mean you experience loss-days roughly 50% of the time, while gain-days are just as frequent. Each loss-check feels worse than each gain-check. Dalbar shows frequent-checkers underperform passive investors by 3.5% annually.",
+      nervous: "<strong>Daily Evaluation Frequency:</strong> Once-daily checking still exposes you to high loss-perception frequency. Over a volatile 3-week period you'll experience ~10 painful loss-days. The emotional toll predicts SIP pauses.",
+      calm: "<strong>Weekly Review Discipline:</strong> Weekly reviewers experience far fewer 'loss days' statistically and report significantly lower financial anxiety. Your volatility tolerance is genuinely high.",
+      zen: "<strong>Elite-Level Emotional Detachment:</strong> Alert-only monitoring is the behavior of the top 5% of investors by long-term performance. This completely eliminates myopic loss aversion from the equation.",
+    },
+    research: "Benartzi & Thaler (1995): Investors who evaluated portfolios monthly were willing to invest 40% more in equities vs those who evaluated daily. Checking frequency, not risk tolerance, explains most retail underperformance."
+  },
+  {
+    id: 3,
+    dimKey: "recovery",
+    dimLabel: "RECOVERY BEHAVIOR",
+    dimColor: "#3ec97b",
+    index: "SCENARIO 4 · RECOVERY BEHAVIOR",
+    title: "Markets are 25% above the crash bottom — but you sold",
+    body: "Three months ago, in a panic, you sold 60% of your equity holdings near the bottom. Markets have now recovered 25% from that low — but are still 10% below your original buy price. You have ₹2.4L in cash sitting idle. What do you do?",
+    time: 22,
+    chart: "recovery",
+    chartDelta: "+25.3% FROM LOW",
+    deltaDir: "up",
+    ticker: "NIFTY · RECOVERY PHASE",
+    choices: [
+      { k: "A", text: "Still waiting — I'll re-enter only when it crosses my original buy price", score: 10, type: "anchor" },
+      { k: "B", text: "Re-invest gradually over 12 months via STP to reduce timing risk", score: 74, type: "gradual" },
+      { k: "C", text: "Lump-sum back in now — I've missed 25% and can't afford more FOMO", score: 55, type: "fomo" },
+      { k: "D", text: "I would never have sold — this scenario doesn't apply to me", score: 88, type: "held" },
+    ],
+    insights: {
+      anchor: "<strong>Purchase Price Anchoring + Regret Paralysis:</strong> Waiting for your 'break-even' price to re-enter is a textbook anchoring error. Your purchase price is irrelevant to future returns. This behavior locks in real losses while market compounds.",
+      gradual: "<strong>Systematic Re-entry Discipline:</strong> STP re-entry removes the emotional burden of market timing. It's behaviorally healthy — you're acknowledging the selling mistake and correcting it without panic buying.",
+      fomo: "<strong>FOMO-Driven Decision:</strong> Re-entering because you've missed gains rather than because conditions are right is emotion-driven. The underlying driver is regret, not analysis. Recovery purchases made under FOMO often get panic-sold again.",
+      held: "<strong>Loss Aversion Resilience (Hypothetical):</strong> Not having sold through the crash is the behavioral ideal. Note this is a self-reported preference — scenario 1 tested actual behavior, which may differ.",
+    },
+    research: "Vanguard (2020): Investors who sold during the COVID crash and waited to re-enter until markets recovered their losses earned 8.4% less over 18 months than those who stayed invested throughout."
+  },
+  {
+    id: 4,
+    dimKey: "consistency",
+    dimLabel: "DISPOSITION EFFECT",
+    dimColor: "#f05252",
+    index: "SCENARIO 5 · DISPOSITION EFFECT",
+    title: "Emergency: sell one position to raise cash",
+    body: "Your father needs urgent medical expenses — ₹2,00,000 required by tomorrow. Your portfolio: Stock A (Infosys) is up 42%. Stock B (Zomato) is down 31%. Both represent ₹2.5L. Both have identical forward prospects according to your analyst. Which do you sell?",
+    time: 15,
+    chart: "flat",
+    chartDelta: "MIXED",
+    deltaDir: "neutral",
+    ticker: "NSE · PORTFOLIO DECISION",
+    choices: [
+      { k: "A", text: "Sell Infosys (winner) — lock in the 42% gain before it reverses", score: 18, type: "winner" },
+      { k: "B", text: "Sell Zomato (loser) — cut the loss, it's dragging my portfolio", score: 78, type: "loser" },
+      { k: "C", text: "Sell half of each — balance the pain", score: 52, type: "split" },
+      { k: "D", text: "Analyze latest fundamentals before deciding — ignore current P&L", score: 90, type: "rational" },
+    ],
+    insights: {
+      winner: "<strong>Classic Disposition Effect:</strong> Selling winners while holding losers is the most documented behavioral bias in finance (Shefrin & Statman 1985). You're seeking pride of locking gains while avoiding the pain of realizing losses. This is tax-inefficient and return-destructive.",
+      loser: "<strong>Avoiding Disposition Effect:</strong> Selling losers (assuming equal fundamentals) is tax-efficient and avoids holding poor performers for emotional reasons. This shows awareness of reference-point psychology.",
+      split: "<strong>Regret Diversification:</strong> Splitting distributes emotional discomfort symmetrically — neither full pride nor full regret realization. A behavioral compromise pattern.",
+      rational: "<strong>Fundamentals-First Approach:</strong> Ignoring current P&L and deciding on forward prospects is the behaviorally optimal response. Only ~11% of retail investors consistently do this. It's the hardest response under time pressure.",
+    },
+    research: "Odean (1998), UC Berkeley: Analyzing 10,000 brokerage accounts, retail investors were 68% more likely to sell winners than losers — the opposite of what maximizes after-tax returns."
+  },
+  {
+    id: 5,
+    dimKey: "herd",
+    dimLabel: "HERD RESISTANCE",
+    dimColor: "#2dd4bf",
+    index: "SCENARIO 6 · HERD BEHAVIOR",
+    title: "Everyone in your family is buying this NFO",
+    body: "Your father, two colleagues, and three WhatsApp groups are buzzing about a 'can't miss' small-cap NFO. The fund house's marketing says it closed at 3× subscription. Everyone is asking if you've invested. The NFO closes in 4 hours. You've done no research.",
+    time: 18,
+    chart: "hype",
+    chartDelta: "3x SUBSCRIBED",
+    deltaDir: "up",
+    ticker: "NFO · SUBSCRIPTION CLOSE",
+    choices: [
+      { k: "A", text: "Invest immediately — clearly a high-conviction market signal", score: 5, type: "herd" },
+      { k: "B", text: "Invest a small token amount to avoid FOMO — feel included", score: 25, type: "partial_herd" },
+      { k: "C", text: "Skip this NFO — I need time to research, oversubscription isn't alpha", score: 88, type: "resist" },
+      { k: "D", text: "Actively avoid — heavy retail excitement is often a contrarian sell signal", score: 95, type: "contrarian" },
+    ],
+    insights: {
+      herd: "<strong>Social Proof Collapse:</strong> Investing because of family/peer pressure with zero research is pure herd behavior. SEBI data shows 73% of NFOs with 3×+ subscriptions underperform the index over 3 years. Social proof is not due diligence.",
+      partial_herd: "<strong>Partial Herd Response:</strong> Token investment to avoid FOMO is common but irrational — you're paying a price to feel socially included. The amount matters less than the behavioral pattern it reveals.",
+      resist: "<strong>Herd Immunity:</strong> Skipping an unresearched investment under social pressure requires active resistance to conformity bias. This is a strong signal of independent decision-making.",
+      contrarian: "<strong>Contrarian Intelligence:</strong> Recognizing that heavy retail FOMO is often a sentiment peak — not an entry signal — requires sophisticated behavioral awareness. This is the rarest response pattern in Indian retail investors.",
+    },
+    research: "AMFI India data: NFOs launched during bull market peaks (high retail subscription) have delivered average 3-year returns of 2.1% vs 11.4% for existing funds in same category."
+  },
+  {
+    id: 6,
+    dimKey: "regret",
+    dimLabel: "REGRET AVERSION",
+    dimColor: "#f472b6",
+    index: "SCENARIO 7 · REGRET AVERSION",
+    title: "You almost bought Bitcoin at ₹20L — now it's ₹65L",
+    body: "18 months ago you analyzed Bitcoin seriously and decided not to invest. It's now 3.25× higher. Your colleagues who bought are not letting you forget it. Your portfolio is up a respectable 14% in the same period. How does this affect you?",
+    time: 22,
+    chart: "moon",
+    chartDelta: "+225% BTC",
+    deltaDir: "up",
+    ticker: "BTC-INR · MISSED TRADE",
+    choices: [
+      { k: "A", text: "Buy Bitcoin now to 'catch up' — I can't miss it again", score: 8, type: "chasing" },
+      { k: "B", text: "I feel genuine regret and it's affecting my ability to focus on my portfolio", score: 22, type: "regret_paralysis" },
+      { k: "C", text: "I acknowledge the miss but my decision framework was sound — move on", score: 86, type: "acceptance" },
+      { k: "D", text: "I document the decision miss as a learning but feel no regret — process matters", score: 95, type: "process" },
+    ],
+    insights: {
+      chasing: "<strong>Regret-Driven Performance Chasing:</strong> Buying an asset after 3× gains specifically because you 'missed it' is one of the most dangerous behavioral patterns. You're not investing — you're retroactively correcting a decision in a changed environment.",
+      regret_paralysis: "<strong>Counterfactual Regret:</strong> Ruminating over missed gains consumes cognitive bandwidth and often triggers irrational compensatory risk-taking. Kahneman showed imagined losses from 'near misses' activate the same neural circuits as actual losses.",
+      acceptance: "<strong>Decision-Process Separation:</strong> Separating outcome quality from decision quality is a hallmark of behavioral sophistication. A sound process can produce bad outcomes — that's randomness, not error. Your framework rating is high.",
+      process: "<strong>Process-Oriented Mindset:</strong> Documenting misses as system feedback without emotional attachment is the gold standard. Professional fund managers who survive long careers all develop this trait. It's extremely rare in retail investors.",
+    },
+    research: "Thaler & Johnson (1990): Previous losses make investors more risk-seeking in subsequent decisions ('trying to break even'), and previous missed gains also increase risk-seeking through regret aversion — both lead to poor outcomes."
+  },
+  {
+    id: 7,
+    dimKey: "consistency",
+    dimLabel: "STATED VS REVEALED",
+    dimColor: "#e8b84b",
+    index: "SCENARIO 8 · FINAL CALIBRATION",
+    title: "Your entire portfolio is down 35% — worst in 15 years",
+    body: "This is the worst market crash since 2008. Your ₹12L portfolio is now ₹7.8L. Respected analysts say it could fall another 20%. You have a child's education fund in 8 years. Your job is secure. What do you do right now?",
+    time: 25,
+    chart: "deepcrash",
+    chartDelta: "-35.0%",
+    deltaDir: "down",
+    ticker: "INDIA MARKETS · CRISIS MODE",
+    choices: [
+      { k: "A", text: "Exit fully — protect the remaining capital, equity is too risky for education funds", score: 5, type: "full_exit" },
+      { k: "B", text: "Reduce equity to 40% — too much anxiety, can't think straight", score: 28, type: "reduce" },
+      { k: "C", text: "Hold current allocation — 8-year horizon absorbs this drawdown historically", score: 78, type: "hold_long" },
+      { k: "D", text: "Rebalance by buying more equity — drawdown creates the best long-term entry", score: 90, type: "rebalance" },
+    ],
+    insights: {
+      full_exit: "<strong>Peak Loss Aversion:</strong> Exiting at -35% with an 8-year horizon locks in a permanent loss from temporary volatility. Every 35%+ Indian market crash in history has been followed by complete recovery within 2-4 years. This reveals true risk tolerance at roughly 10-20 out of 100.",
+      reduce: "<strong>Anxiety-Driven Reallocation:</strong> Reducing equity during maximum drawdown is the most expensive behavioral mistake. Markets typically begin recovery before the anxiety subsides — you'd likely miss the early recovery gains.",
+      hold_long: "<strong>Horizon-Anchored Discipline:</strong> Recognizing that an 8-year horizon provides historical drawdown recovery buffer shows strong behavioral maturity. You can hold in difficult conditions when you have a clear plan.",
+      rebalance: "<strong>Behavioral Optimal Response:</strong> Counter-cyclical rebalancing — buying when it's most painful — is the most reliably wealth-creating behavior over long horizons. Historically, Indian investors who bought during 35%+ crashes earned 28%+ in the subsequent 12 months on average.",
+    },
+    research: "SEBI study (2021): Of 847 surveyed investors who stated '7+ year horizon and high risk tolerance,' only 23% actually maintained or increased equity allocation during the March 2020 crash. 77% either sold or reduced allocation."
+  }
+];
+
+const PROFILES = [
+  { min: 0, max: 25, name: "Emotionally Conservative", icon: "🛡️", bg: "rgba(240,82,82,0.12)", color: "#f05252", score_label: "Very High Loss Sensitivity", desc: "Your behavioral data reveals significantly lower risk tolerance than you may self-report. Loss aversion is strongly driving your decisions. Your System 1 responses consistently dominate under pressure." },
+  { min: 26, max: 45, name: "Emotionally Reactive", icon: "⚡", bg: "rgba(245,166,35,0.12)", color: "#f5a623", score_label: "High Emotional Reactivity", desc: "You show moderate tolerance in calm conditions but emotional triggers (time pressure, social proof) significantly degrade decision quality. Pre-commitment strategies and rules-based investing would help considerably." },
+  { min: 46, max: 62, name: "Emotionally Balanced", icon: "⚖️", bg: "rgba(124,106,247,0.12)", color: "#7c6af7", score_label: "Moderate Behavioral Resilience", desc: "Your stated and revealed preferences are reasonably aligned. You show good emotional regulation in most scenarios but have identifiable pressure points. With behavioral coaching you can meaningfully improve." },
+  { min: 63, max: 78, name: "Emotionally Resilient", icon: "💪", bg: "rgba(61,201,123,0.12)", color: "#3ec97b", score_label: "Strong Behavioral Discipline", desc: "You demonstrate above-average emotional regulation under market stress. You likely understate your actual risk tolerance. Your portfolio can likely absorb higher equity allocation than you currently hold." },
+  { min: 79, max: 100, name: "Emotionally Aggressive", icon: "🚀", bg: "rgba(45,212,191,0.12)", color: "#2dd4bf", score_label: "Elite Risk Resilience", desc: "Very high emotional resilience — you may be underestimating downside scenarios. Ensure your portfolio construction accounts for maximum drawdowns, not just average volatility. Consider whether your resilience extends to concentration risk." },
+];
+
+const DIM_NAMES = {
+  loss: "Loss Tolerance",
+  time: "Time Pressure",
+  vol: "Volatility Comfort",
+  recovery: "Recovery Behavior",
+  consistency: "Disposition Effect",
+  herd: "Herd Resistance",
+  regret: "Regret Aversion"
+};
+
+const DIM_COLORS = {
+  loss: "#7c6af7",
+  time: "#f5a623",
+  vol: "#534AB7",
+  recovery: "#3ec97b",
+  consistency: "#f05252",
+  herd: "#2dd4bf",
+  regret: "#f472b6"
+};
+
+// =================== STATE ===================
+let state = {
+  current: 0,
+  scores: {},
+  types: {},
+  times: {},
+  timerStart: 0,
+  timerInterval: null,
+  selectedChoice: null,
+  chartInst: null,
+  speedInst: null,
+  radarInst: null,
+  benchInst: null,
+  biasesDetected: [],
+  confirmedChoice: false,
+};
+
+// =================== INIT ===================
+function startSim() {
+  state.current = 0;
+  state.scores = {};
+  state.types = {};
+  state.times = {};
+  state.biasesDetected = [];
+  state.confirmedChoice = false;
+  showScreen("scenario");
+  loadScenario(0);
+}
+
+function restartSim() {
+  if (state.radarInst) { state.radarInst.destroy(); state.radarInst = null; }
+  if (state.benchInst) { state.benchInst.destroy(); state.benchInst = null; }
+  showScreen("intro");
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+// =================== SCENARIO LOADING ===================
+function loadScenario(idx) {
+  const sc = SCENARIOS[idx];
+  state.selectedChoice = null;
+  state.confirmedChoice = false;
+
+  // Progress track
+  const track = document.getElementById("prog-track");
+  track.innerHTML = SCENARIOS.map((s, i) => `<div class="prog-seg ${i < idx ? 'done' : i === idx ? 'current' : ''}"></div>`).join("");
+  document.getElementById("sc-counter").textContent = `${idx + 1} / ${SCENARIOS.length}`;
+
+  // Content
+  document.getElementById("sc-index").textContent = sc.index;
+  document.getElementById("sc-title").textContent = sc.title;
+  document.getElementById("sc-body").textContent = sc.body;
+  document.getElementById("chart-ticker").textContent = sc.ticker;
+
+  const deltaEl = document.getElementById("chart-delta");
+  deltaEl.textContent = sc.chartDelta;
+  deltaEl.className = "chart-delta font-mono " + (sc.deltaDir === "up" ? "up" : sc.deltaDir === "down" ? "down" : "");
+
+  // Choices
+  const grid = document.getElementById("choices-grid");
+  grid.innerHTML = sc.choices.map((c, i) => `
+    <button class="choice-btn" onclick="selectChoice(${i})" id="choice-${i}">
+      <span class="choice-key font-mono">${c.k}</span>
+      <span class="choice-text">${c.text}</span>
+    </button>
+  `).join("");
+
+  document.getElementById("confirm-btn").classList.remove("visible");
+  document.getElementById("insight-wrap").style.display = "none";
+
+  // Research context sidebar
+  document.getElementById("research-context").textContent = sc.research;
+
+  // Chart
+  drawMarketChart(sc.chart);
+
+  // Live scores sidebar
+  updateLiveScores();
+
+  // Timer
+  startTimer(sc.time);
+  state.timerStart = Date.now();
+}
+
+// =================== CHOICE SELECTION ===================
+function selectChoice(i) {
+  if (state.confirmedChoice) return;
+  state.selectedChoice = i;
+
+  document.querySelectorAll(".choice-btn").forEach((b, j) => {
+    b.classList.remove("selected");
+  });
+  document.getElementById(`choice-${i}`).classList.add("selected");
+  document.getElementById("confirm-btn").classList.add("visible");
+
+  // Cognitive load update
+  const cogFill = document.getElementById("cog-fill");
+  const elapsed = (Date.now() - state.timerStart) / 1000;
+  const sc = SCENARIOS[state.current];
+  const pct = Math.min(95, Math.round((1 - elapsed / sc.time) * 100));
+  cogFill.style.width = pct + "%";
+  document.getElementById("cog-label").textContent = pct > 60 ? "System 1 active (fast)" : pct > 30 ? "Transitioning" : "System 2 active (deliberate)";
+}
+
+function confirmChoice() {
+  if (state.selectedChoice === null || state.confirmedChoice) return;
+  state.confirmedChoice = true;
+
+  clearInterval(state.timerInterval);
+
+  const sc = SCENARIOS[state.current];
+  const choice = sc.choices[state.selectedChoice];
+  const elapsed = (Date.now() - state.timerStart) / 1000;
+
+  // Store results
+  state.scores[sc.dimKey] = choice.score;
+  state.types[sc.dimKey] = choice.type;
+  state.times[sc.dimKey] = Math.round(elapsed * 10) / 10;
+
+  // Disable all choices
+  document.querySelectorAll(".choice-btn").forEach((b, j) => {
+    b.classList.add("disabled");
+    if (j === state.selectedChoice) {
+      b.classList.add(choice.score >= 60 ? "correct" : "wrong");
+    }
+  });
+
+  document.getElementById("confirm-btn").classList.remove("visible");
+
+  // Speed ring
+  drawSpeedRing(elapsed, sc.time);
+
+  // Update bias detection
+  detectBiases(choice.type, sc.dimKey);
+
+  // Show insight
+  const insightEl = document.getElementById("insight-text");
+  insightEl.innerHTML = sc.insights[choice.type];
+  document.getElementById("insight-wrap").style.display = "block";
+
+  const nextBtn = document.getElementById("next-btn");
+  nextBtn.textContent = state.current < SCENARIOS.length - 1 ? "Next Scenario →" : "View Full Results →";
+
+  // Update live scores
+  updateLiveScores();
+}
+
+// =================== TIMER ===================
+function startTimer(secs) {
+  clearInterval(state.timerInterval);
+  let remaining = secs;
+  const fill = document.getElementById("timer-fill");
+  const val = document.getElementById("timer-val");
+  fill.style.width = "100%";
+  fill.classList.remove("warn", "urgent");
+  val.classList.remove("urgent");
+  val.textContent = secs + "s";
+
+  state.timerInterval = setInterval(() => {
+    remaining -= 0.1;
+    const pct = Math.max(0, (remaining / secs) * 100);
+    fill.style.width = pct + "%";
+    val.textContent = Math.max(0, Math.ceil(remaining)) + "s";
+
+    if (remaining <= secs * 0.4 && remaining > secs * 0.2) {
+      fill.classList.add("warn");
+      fill.classList.remove("urgent");
+      val.classList.remove("urgent");
+    } else if (remaining <= secs * 0.2) {
+      fill.classList.add("urgent");
+      fill.classList.remove("warn");
+      val.classList.add("urgent");
+    }
+
+    if (remaining <= 0) {
+      clearInterval(state.timerInterval);
+      if (!state.confirmedChoice) {
+        if (state.selectedChoice !== null) {
+          confirmChoice();
+        } else {
+          // Auto-select random on timeout
+          selectChoice(Math.floor(Math.random() * SCENARIOS[state.current].choices.length));
+          setTimeout(() => confirmChoice(), 300);
+        }
+      }
+    }
+  }, 100);
+}
+
+// =================== NEXT ===================
+function nextScenario() {
+  state.current++;
+  if (state.current >= SCENARIOS.length) {
+    showResults();
+  } else {
+    showScreen("scenario");
+    setTimeout(() => loadScenario(state.current), 50);
+  }
+}
+
+// =================== BIAS DETECTION ===================
+function detectBiases(type, dimKey) {
+  const biasMap = {
+    panic: "Loss aversion",
+    hesitate: "Myopic loss aversion",
+    herd: "Herd behavior",
+    partial_herd: "Mild herd behavior",
+    winner: "Disposition effect",
+    anchor: "Purchase price anchoring",
+    chasing: "Performance chasing",
+    regret_paralysis: "Counterfactual regret",
+    full_exit: "Extreme loss aversion",
+    reduce: "Anxiety-driven reallocation",
+    fomo: "FOMO investing"
+  };
+
+  const bias = biasMap[type];
+  if (bias && !state.biasesDetected.includes(bias)) {
+    state.biasesDetected.push(bias);
+  }
+
+  const container = document.getElementById("bias-detected");
+  if (state.biasesDetected.length === 0) {
+    container.textContent = "No biases detected yet";
+  } else {
+    container.innerHTML = state.biasesDetected.map(b =>
+      `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+        <div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
+        <span style="font-size:11px;color:var(--text2)">${b}</span>
+      </div>`
+    ).join("");
+  }
+}
+
+// =================== LIVE SCORES ===================
+function updateLiveScores() {
+  const container = document.getElementById("live-scores");
+  const dims = ["loss","time","vol","recovery","consistency","herd","regret"];
+  container.innerHTML = dims.map(d => {
+    const s = state.scores[d];
+    const color = DIM_COLORS[d];
+    return `<div class="score-row">
+      <span class="score-dim-name" style="font-size:11px">${DIM_NAMES[d] || d}</span>
+      <div class="mini-bar-wrap">
+        <div class="mini-bar" style="width:${s !== undefined ? s : 0}%;background:${color}"></div>
+      </div>
+      <span class="score-dim-val font-mono" style="font-size:11px;color:${color}">${s !== undefined ? s : '—'}</span>
+    </div>`;
+  }).join("");
+}
+
+// =================== SPEED RING ===================
+function drawSpeedRing(elapsed, total) {
+  const canvas = document.getElementById("speed-ring");
+  const ctx = canvas.getContext("2d");
+  const cx = 40, cy = 40, r = 30;
+  ctx.clearRect(0, 0, 80, 80);
+
+  // Background arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.06)";
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  // Speed arc
+  const pct = Math.min(1, elapsed / total);
+  const color = pct < 0.4 ? "#f05252" : pct < 0.7 ? "#f5a623" : "#3ec97b";
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * pct));
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 5;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  document.getElementById("speed-num").textContent = elapsed.toFixed(1);
+  document.getElementById("speed-num").style.color = color;
+
+  const label = pct < 0.33 ? "Impulsive" : pct < 0.66 ? "Moderate" : "Deliberate";
+  document.getElementById("speed-label").textContent = label;
+}
+
+// =================== MARKET CHARTS ===================
+function drawMarketChart(type) {
+  if (state.chartInst) { state.chartInst.destroy(); state.chartInst = null; }
+  const canvas = document.getElementById("mkt-chart");
+  const pts = generateChartData(type);
+  const last = pts[pts.length - 1];
+  const first = pts[0];
+  const up = last >= first;
+  const lineColor = type === "crash" || type === "deepcrash" || type === "spike" ? "#f05252" :
+                    type === "recovery" || type === "moon" ? "#3ec97b" :
+                    type === "hype" ? "#f5a623" : "#7c6af7";
+
+  state.chartInst = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels: pts.map((_, i) => i),
+      datasets: [{
+        data: pts,
+        borderColor: lineColor,
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: true,
+        backgroundColor: lineColor + "16",
+        tension: 0.4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { display: false }, y: { display: false } },
+      animation: { duration: 600, easing: "easeOutCubic" }
+    }
+  });
+}
+
+function generateChartData(type) {
+  const n = 50;
+  let pts = [100];
+  for (let i = 1; i < n; i++) {
+    const last = pts[i - 1];
+    let delta;
+    switch (type) {
+      case "crash":       delta = -1.2 + (Math.random() * 1.5 - 1.5); break;
+      case "deepcrash":   delta = -1.8 + (Math.random() * 1.2 - 1.5); break;
+      case "spike":       delta = i < 25 ? (Math.random() * 2 - 1) : (i < 32 ? -5 + Math.random() : Math.random() * 2); break;
+      case "volatile":    delta = (Math.random() * 8 - 4); break;
+      case "recovery":    delta = i < 18 ? -2 + Math.random() * 0.5 : 1.5 + Math.random() * 0.8 - 0.2; break;
+      case "moon":        delta = 1.8 + Math.random() * 2 - 0.3; break;
+      case "hype":        delta = i < 35 ? 0.6 + Math.random() * 1.5 - 0.2 : (Math.random() * 3 - 1.5); break;
+      default:            delta = Math.random() * 2 - 1;
+    }
+    pts.push(Math.max(40, Math.min(250, last + delta)));
+  }
+  return pts;
+}
+
+// =================== RESULTS ===================
+function showResults() {
+  showScreen("results");
+
+  const dims = Object.keys(DIM_NAMES);
+  const scores = dims.map(d => state.scores[d] || 50);
+  const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+
+  const profile = PROFILES.find(p => avg >= p.min && avg <= p.max) || PROFILES[2];
+
+  // Header
+  document.getElementById("res-title").textContent = profile.name;
+
+  // Profile card
+  const card = document.getElementById("profile-card");
+  card.innerHTML = `
+    <div class="profile-icon" style="background:${profile.bg};">${profile.icon}</div>
+    <div class="profile-info">
+      <div class="profile-name font-display" style="color:${profile.color}">${profile.name}</div>
+      <div class="profile-score-row">
+        <div>
+          <div class="profile-score font-mono" style="color:${profile.color}">${avg}</div>
+          <div class="profile-score-label font-mono">/100 EmotionIQ Score</div>
+        </div>
+        <div style="padding-left:1rem;border-left:1px solid var(--border)">
+          <div style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:2px">SIGNAL</div>
+          <div style="font-size:14px;font-weight:500;color:${profile.color}">${profile.score_label}</div>
+        </div>
+      </div>
+      <div class="profile-desc">${profile.desc}</div>
+    </div>
+  `;
+
+  // Radar chart
+  setTimeout(() => drawRadar(scores, dims), 100);
+
+  // Dimension breakdown
+  const breakdown = document.getElementById("dim-breakdown");
+  breakdown.innerHTML = dims.map((d, i) => {
+    const s = scores[i];
+    const color = DIM_COLORS[d];
+    return `
+      <div class="dim-row">
+        <span class="dim-label">${DIM_NAMES[d]}</span>
+        <div class="dim-bar-outer">
+          <div class="dim-bar-fill" style="width:0%;background:${color}" data-target="${s}"></div>
+        </div>
+        <span class="dim-score font-mono" style="color:${color}">${s}</span>
+      </div>
+    `;
+  }).join("");
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll(".dim-bar-fill").forEach(el => {
+      el.style.width = el.dataset.target + "%";
+    });
+  }, 200);
+
+  // Benchmark comparison chart
+  setTimeout(() => drawBenchmarkChart(scores, dims), 150);
+
+  // Behavioral signals
+  const signalList = document.getElementById("signal-list");
+  const signals = buildSignals();
+  signalList.innerHTML = signals.map(s => `
+    <div class="signal-item">
+      <div class="signal-dot" style="background:${s.color}"></div>
+      <span>${s.text}</span>
+    </div>
+  `).join("");
+
+  // Benchmark comparison list
+  const benchList = document.getElementById("bench-list");
+  benchList.innerHTML = buildBenchmarks(avg, scores, dims).map(b => `
+    <div class="bench-row">
+      <span class="bench-name">${b.name}</span>
+      <div class="bench-bar-outer"><div class="bench-bar-fill" style="width:${b.val}%;background:${b.color}"></div></div>
+      <span class="bench-val font-mono">${b.val}</span>
+      <span class="bench-diff font-mono" style="color:${b.diff > 0 ? 'var(--green)' : 'var(--red)'}">${b.diff > 0 ? '+' : ''}${b.diff}</span>
+    </div>
+  `).join("");
+
+  // AI Analysis
+  setTimeout(() => runAIAnalysis(profile, avg, scores, dims), 800);
+}
+
+function buildSignals() {
+  const signals = [];
+  const types = state.types;
+
+  if (["panic","full_exit","reduce"].includes(types.loss)) signals.push({ text: "Loss aversion is actively overriding your stated risk tolerance under stress", color: "#f05252" });
+  if (["hold","bold","rebalance","hold_long"].includes(types.loss)) signals.push({ text: "Strong loss tolerance — your revealed preference exceeds most questionnaire results", color: "#3ec97b" });
+  if (["panic","partial"].includes(types.time)) signals.push({ text: "Time pressure degrades decision quality — System 1 dominates under urgency", color: "#f5a623" });
+  if (types.vol === "anxious" || types.vol === "nervous") signals.push({ text: "Portfolio checking frequency will create myopic loss aversion drag on returns", color: "#f05252" });
+  if (types.consistency === "winner") signals.push({ text: "Disposition effect detected — selling winners while holding losers destroys after-tax returns", color: "#f05252" });
+  if (types.herd === "herd" || types.herd === "partial_herd") signals.push({ text: "Social proof vulnerability — peer and family pressure influences investment decisions", color: "#f5a623" });
+  if (types.regret === "chasing") signals.push({ text: "Regret-driven performance chasing — dangerous pattern leading to buy-high behavior", color: "#f05252" });
+  if (["resist","contrarian"].includes(types.herd)) signals.push({ text: "High herd immunity — independent decision-making under social pressure", color: "#3ec97b" });
+  if (["process","acceptance"].includes(types.regret)) signals.push({ text: "Process-oriented mindset — outcome-independent evaluation of decisions", color: "#3ec97b" });
+
+  if (signals.length === 0) signals.push({ text: "Behaviorally neutral profile — no strong positive or negative signals detected", color: "#7c6af7" });
+
+  return signals.slice(0, 6);
+}
+
+function buildBenchmarks(avg, scores, dims) {
+  return [
+    { name: "Your EmotionIQ", val: avg, color: "#7c6af7", diff: 0 },
+    { name: "Indian Retail Avg", val: 34, color: "#9998a8", diff: avg - 34 },
+    { name: "Experienced Investor", val: 62, color: "#2dd4bf", diff: avg - 62 },
+    { name: "Behaviorally Optimal", val: 88, color: "#3ec97b", diff: avg - 88 },
+    { name: "Pre-crash Survey Avg", val: 71, color: "#f5a623", diff: avg - 71 },
+  ];
+}
+
+// =================== CHARTS ===================
+function drawRadar(scores, dims) {
+  if (state.radarInst) { state.radarInst.destroy(); state.radarInst = null; }
+  const canvas = document.getElementById("radar-chart");
+
+  state.radarInst = new Chart(canvas, {
+    type: "radar",
+    data: {
+      labels: dims.map(d => DIM_NAMES[d]),
+      datasets: [
+        {
+          label: "You",
+          data: scores,
+          borderColor: "#7c6af7",
+          backgroundColor: "rgba(124,106,247,0.15)",
+          borderWidth: 1.5,
+          pointBackgroundColor: "#7c6af7",
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        },
+        {
+          label: "Indian Retail Avg",
+          data: [30, 28, 22, 25, 32, 20, 35],
+          borderColor: "rgba(153,152,168,0.5)",
+          backgroundColor: "rgba(153,152,168,0.05)",
+          borderWidth: 1,
+          pointRadius: 2,
+          borderDash: [4, 4],
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { stepSize: 25, display: false },
+          grid: { color: "rgba(255,255,255,0.06)" },
+          angleLines: { color: "rgba(255,255,255,0.06)" },
+          pointLabels: {
+            font: { size: 10, family: "'DM Mono', monospace" },
+            color: "#9998a8"
+          }
+        }
+      },
+      animation: { duration: 1000, easing: "easeOutQuart" }
+    }
+  });
+}
+
+function drawBenchmarkChart(scores, dims) {
+  if (state.benchInst) { state.benchInst.destroy(); state.benchInst = null; }
+  const canvas = document.getElementById("bench-chart");
+  const labels = dims.map(d => DIM_NAMES[d]);
+  const indiaAvg = [30, 28, 22, 25, 32, 20, 35];
+
+  state.benchInst = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Your Score",
+          data: scores,
+          backgroundColor: "#7c6af7aa",
+          borderColor: "#7c6af7",
+          borderWidth: 1,
+          borderRadius: 4,
+        },
+        {
+          label: "India Retail Avg",
+          data: indiaAvg,
+          backgroundColor: "rgba(153,152,168,0.2)",
+          borderColor: "rgba(153,152,168,0.5)",
+          borderWidth: 1,
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#9998a8",
+            font: { size: 10, family: "'DM Mono', monospace" },
+            maxRotation: 30
+          },
+          grid: { color: "rgba(255,255,255,0.04)" }
+        },
+        y: {
+          min: 0, max: 100,
+          ticks: { color: "#5c5b6e", font: { size: 10 } },
+          grid: { color: "rgba(255,255,255,0.04)" }
+        }
+      },
+      animation: { duration: 800 }
+    }
+  });
+}
+
+// =================== AI ANALYSIS ===================
+async function runAIAnalysis(profile, avg, scores, dims) {
+  const outputEl = document.getElementById("ai-output");
+
+  const dimSummary = dims.map((d, i) => `${DIM_NAMES[d]}: ${scores[i]}/100 (behavior type: ${state.types[d] || 'N/A'})`).join(", ");
+  const biases = state.biasesDetected.length > 0 ? state.biasesDetected.join(", ") : "none detected";
+  const avgTimes = Object.entries(state.times).map(([k, v]) => `${DIM_NAMES[k] || k}: ${v}s`).join(", ");
+
+  const prompt = `You are a behavioral finance expert providing a personalized risk assessment report.
+
+The investor just completed 8 behavioral scenarios under time pressure. Here are the results:
+
+EmotionIQ Profile: "${profile.name}" (Score: ${avg}/100)
+Dimension Scores: ${dimSummary}
+Behavioral Biases Detected: ${biases}
+Decision Speeds: ${avgTimes}
+
+Write a concise, insightful 3-paragraph behavioral analysis. 
+Paragraph 1: Summarize the key behavioral pattern revealed (what their decisions show vs what investors typically claim).
+Paragraph 2: Identify the 2 most important behavioral risks this investor faces and how they'd manifest in a real market downturn.
+Paragraph 3: Give 3 specific, actionable behavioral interventions tailored to their exact profile — concrete, practical, and based on behavioral finance research.
+
+Use bold for key terms. Be direct, specific, and insightful — not generic. Reference their actual scores and decision types where possible. Keep it under 250 words total.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.map(c => c.text || "").join("") || "";
+
+    if (text) {
+      outputEl.innerHTML = "";
+      outputEl.classList.add("typing-cursor");
+      await typeText(outputEl, text.replace(/\n\n/g, "<br><br>").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"));
+      outputEl.classList.remove("typing-cursor");
+    } else {
+      outputEl.innerHTML = getFallbackAnalysis(profile, avg, scores, dims);
+    }
+  } catch (e) {
+    outputEl.innerHTML = getFallbackAnalysis(profile, avg, scores, dims);
+  }
+}
+
+async function typeText(el, html) {
+  const temp = document.createElement("div");
+  temp.innerHTML = html;
+  const plainText = temp.textContent;
+  const charsPerFrame = 4;
+  let i = 0;
+
+  return new Promise(resolve => {
+    const interval = setInterval(() => {
+      i += charsPerFrame;
+      const sub = plainText.substring(0, i);
+      el.innerHTML = sub.replace(/\n\n/g, "<br><br>");
+      if (i >= plainText.length) {
+        clearInterval(interval);
+        el.innerHTML = html;
+        resolve();
+      }
+    }, 16);
+  });
+}
+
+function getFallbackAnalysis(profile, avg, scores, dims) {
+  const dimSummary = dims.map((d, i) => `<strong>${DIM_NAMES[d]}</strong>: ${scores[i]}/100`).join(", ");
+  return `<strong>Behavioral Pattern Summary:</strong> Your EmotionIQ score of ${avg}/100 places you in the "${profile.name}" category. Your dimension scores (${dimSummary}) reveal a profile where your revealed preferences under pressure show ${avg < 50 ? 'significantly more conservative behavior than typical questionnaire responses would suggest' : 'reasonable alignment between stated and revealed risk tolerance'}.<br><br>
+<strong>Key Behavioral Risks:</strong> Based on your decision patterns, the primary risks are ${state.biasesDetected.length > 0 ? state.biasesDetected.slice(0, 2).join(' and ') : 'emotional reactivity under time pressure and potential herd behavior during market euphoria'} — both of which tend to manifest most destructively at market extremes when social proof is strongest.<br><br>
+<strong>Behavioral Interventions:</strong> (1) Implement a <strong>24-hour rule</strong> before any portfolio change during market volatility — this removes System 1 override from your decisions. (2) Set up <strong>automatic SIP with no manual override option</strong> — removing the decision moment eliminates myopic loss aversion. (3) Create a written <strong>Investment Policy Statement</strong> detailing your rebalancing triggers — this transforms emotional decisions into rule-based ones, proven to improve returns by 1.5-2% annually.`;
+}
+
+// =================== ACTION BUTTONS ===================
+function getAICoaching() {
+  const avg = getAvgScore();
+  const profile = PROFILES.find(p => avg >= p.min && avg <= p.max) || PROFILES[2];
+  const biases = state.biasesDetected.join(", ") || "general emotional reactivity";
+  showToast("Opening coaching session...");
+  setTimeout(() => {
+    if (typeof sendPrompt === "function") {
+      sendPrompt(`I just completed the EmotionIQ behavioral risk assessment. My profile is "${profile.name}" with a score of ${avg}/100. Biases detected: ${biases}. Please give me a detailed, personalized behavioral coaching plan with specific strategies to improve my investment decision-making based on behavioral finance research.`);
+    } else {
+      alert(`Your EmotionIQ: ${avg}/100 — Profile: ${profile.name}. For full coaching, use this tool inside Claude.`);
+    }
+  }, 300);
+}
+
+function getBiasReport() {
+  const biases = state.biasesDetected.join(", ") || "no specific biases";
+  showToast("Generating bias report...");
+  setTimeout(() => {
+    if (typeof sendPrompt === "function") {
+      sendPrompt(`Based on my behavioral assessment, the following biases were detected: ${biases}. Please provide a detailed explanation of each bias, the specific neural/psychological mechanism behind it, historical examples from Indian markets, and the estimated annual return drag each bias causes for the average retail investor.`);
+    }
+  }, 300);
+}
+
+function getSIPStrategy() {
+  const avg = getAvgScore();
+  showToast("Preparing SIP strategy...");
+  setTimeout(() => {
+    if (typeof sendPrompt === "function") {
+      sendPrompt(`My EmotionIQ score is ${avg}/100. Based on this behavioral profile, design a personalized SIP strategy for an Indian retail investor that accounts for my emotional decision-making patterns. Include: optimal SIP frequency, step-up strategy, which fund categories match my behavioral risk capacity (not just stated tolerance), and what pre-commitment mechanisms to put in place before the next market downturn.`);
+    }
+  }, 300);
+}
+
+function getAvgScore() {
+  const dims = Object.keys(DIM_NAMES);
+  const scores = dims.map(d => state.scores[d] || 50);
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+}
+
+// =================== TOAST ===================
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+// =================== KEYBOARD SHORTCUTS ===================
+document.addEventListener("keydown", e => {
+  if (!document.getElementById("scenario").classList.contains("active")) return;
+  if (state.confirmedChoice) return;
+  const keys = { "1": 0, "2": 1, "3": 2, "4": 3, "a": 0, "b": 1, "c": 2, "d": 3 };
+  const idx = keys[e.key.toLowerCase()];
+  if (idx !== undefined) selectChoice(idx);
+  if (e.key === "Enter" && state.selectedChoice !== null) confirmChoice();
+});
+
+// Initial score display
+updateLiveScores();
+</script>
+</body>
+</html>
